@@ -1,0 +1,6 @@
+recursive-include cosmos_sql *
+include README.md
+include LICENSE
+
+global-exclude *.pyc
+global-exclude .DS_Store
