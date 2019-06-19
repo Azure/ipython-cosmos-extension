@@ -18,7 +18,7 @@ IPython Extension for Cosmos SQL
 ```
 ## Set Container name     
 ```bash
-    %container <your_container_name>
+%container <your_container_name>
 ``` 
 ## Execute Cosmos SQL Statements
 ```bash
