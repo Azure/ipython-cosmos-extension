@@ -22,8 +22,8 @@ IPython Extension for Cosmos SQL
 ``` 
 ## Execute Cosmos SQL Statements
 ```bash
-    %sql
-    select * from user;
+    %%sql
+    select * from user
 ```
 To get the result from the command use ``_`` variable. 
 ## Auto conversion of result to data frame
