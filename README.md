@@ -3,18 +3,18 @@ IPython Extension for Cosmos SQL
 
 ## Install the extension:
 ```bash
-    !pip install  ipython-cosmos-extension
+!pip install  ipython-cosmos-extension
 ```
 ## Load the extension:
   This extension assumes cosmosdb endpoint credentials
   are set as environment variables accessible by
   ``COSMOS_ENDPOINT`` and ``COSMOS_KEY``.
 ```bash
-    %load_ext cosmos_sql
+%load_ext cosmos_sql
 ```
 ## Set Database name
 ```bash
-    %database <your_database_name>
+%database <your_database_name>
 ```
 ## Set Container name     
 ```bash
@@ -22,18 +22,26 @@ IPython Extension for Cosmos SQL
 ``` 
 ## Execute Cosmos SQL Statements
 ```bash
-    %%sql
-    select * from user
+%%sql
+select * from user
 ```
+or you can specify different database or collection
+
+```bash
+%%sql --database testdb --container testcol2
+SELECT top 1 r.id, r._ts from r order by r._ts desc
+
+```
+
 To get the result from the command use ``_`` variable. 
 ## Auto conversion of result to data frame
    Disabling auto conversion of result to dataframe:
 ```bash
-    %disable_autoconvert_to_dataframe 
+%disable_autoconvert_to_dataframe 
 ```
    Enabling auto conversion of result to dataframe:
 ```bash
-    %enable_autoconvert_to_dataframe 
+%enable_autoconvert_to_dataframe 
 ```
 
 
