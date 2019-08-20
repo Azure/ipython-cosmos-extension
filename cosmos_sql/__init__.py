@@ -18,8 +18,38 @@ def unload_ipython_extension(ipython):
     CosmosClient = None
     pass
 
+from IPython.core.display import display
+from IPython.core.display import HTML
+from IPython import get_ipython
+import sys
+
+class IpythonDisplay(object):
+    def __init__(self):
+        self._ipython_shell = get_ipython()
+
+    def html(self, to_display):
+        display(HTML(to_display))
+
+    def display(self, msg):
+        self._ipython_shell.write(msg)
+        self.__stdout_flush()
+
+    def display_error(self, error):
+        self._ipython_shell.write_err(u"{}\n".format(error))
+        self.__stderr_flush()
+
+    def __stdout_flush(self):
+        sys.stdout.flush()
+
+    def __stderr_flush(self):
+        sys.stdout.flush()
+
 @magics_class
 class CosmosMagics(Magics):
+    def __init__(self, shell, data=None):
+        super(CosmosMagics, self).__init__(shell)
+        self._ipython_display = IpythonDisplay()
+
     @cell_magic
     @magic_arguments.magic_arguments()
     @magic_arguments.argument('--database', '-d', type=str, default=None,
@@ -130,3 +160,43 @@ class CosmosMagics(Magics):
         """
         global result_auto_convert_to_df
         result_auto_convert_to_df = False
+
+    @line_magic
+    def help(self, line, cell="", local_ns=None):
+        """ Displays help
+        Usage:
+        * ``help``  - displays help
+        """
+        help_html = u"""
+The following provides the cosmos SQL magic function guide:
+<table>
+  <tr>
+    <th>Magic</th>
+    <th>Example</th>
+    <th>Description</th>
+  </tr>  
+  <tr>
+    <td>database</td>
+    <td>%database dbName</td>
+    <td>sets the default cosmos database to be used in queries.</td>
+  </tr>
+  <tr>
+    <td>container</td>
+    <td>%container containerName</td>
+    <td>sets the default cosmos container to be used in queries.</td>
+  </tr>
+  <tr>
+    <td>sql</td>
+    <td>%%sql --database dbName --container containerName<br/>SELECT top 1 r.id, r._ts from r order by r._ts desc</td>
+    <td>Queries cosmos using the given cosmos database and container.
+    Parameters:
+      <ul>
+        <li>--database if provided this cosmos database will be used otherwise the default cosmos database will be used.</li>
+        <li>--container if provided this cosmos container will be used otherwise the default cosmos container will be used.</li>
+        <li>--output VAR_NAME: the result data-frame will be stored in the given variable name.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+"""
+        self._ipython_display.html(help_html)
