@@ -168,7 +168,7 @@ class CosmosMagics(Magics):
         * ``help``  - displays help
         """
         help_html = u"""
-The following provides the guide for cosmos magic functions:
+The following provides the guide for Cosmos magic functions:
 <table>
   <tr style="text-align:left;">
     <th style="text-align:left;">Magic</th>
@@ -177,25 +177,28 @@ The following provides the guide for cosmos magic functions:
   </tr>  
   <tr style="text-align:left;">
     <td style="text-align:left;">sql</td>
-    <td style="text-align:left;">%%sql --database dbName --container containerName<br/>SELECT top 1 r.id, r._ts from r order by r._ts desc</td>
-    <td style="text-align:left;">Queries cosmos using the given cosmos database and container.
+    <td style="text-align:left;">%%sql --database databaseName --container containerName
+                            <br/>SELECT top 1 r.id, r._ts from r order by r._ts desc</td>
+    <td style="text-align:left;">Queries Azure Cosmos DB using the given Cosmos database and container.
     Parameters:
       <ul>
-        <li>--database if provided this cosmos database will be used otherwise the default cosmos database will be used.</li>
-        <li>--container if provided this cosmos container will be used otherwise the default cosmos container will be used.</li>
-        <li>--output VAR_NAME: the result data-frame will be stored in the given variable name.</li>
+        <li>--database DATABASE_NAME: If provided, this Cosmos database will be used;
+         otherwise the default database will be used.</li>
+        <li>--container CONTAINER_NAME: If provided, this Cosmos container will be used; 
+        otherwise the default container will be used.</li>
+        <li>--output VAR_NAME: The dataframe of the result will be stored in a variable with this name.</li>
       </ul>
     </td>
   </tr>
   <tr style="text-align:left;">
     <td style="text-align:left;">database</td>
-    <td style="text-align:left;">%database dbName</td>
-    <td style="text-align:left;">sets the default cosmos database to be used in queries.</td>
+    <td style="text-align:left;">%database databaseName</td>
+    <td style="text-align:left;">Sets the default Cosmos database to be used in queries.</td>
   </tr>
   <tr style="text-align:left;">
     <td style="text-align:left;">container</td>
     <td style="text-align:left;">%container containerName</td>
-    <td style="text-align:left;">sets the default cosmos container to be used in queries.</td>
+    <td style="text-align:left;">Sets the default Cosmos container to be used in queries.</td>
   </tr>
 </table>
 """
