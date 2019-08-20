@@ -49,6 +49,7 @@ class CosmosMagics(Magics):
     def __init__(self, shell, data=None):
         super(CosmosMagics, self).__init__(shell)
         self._ipython_display = IpythonDisplay()
+        self.ensure_connected()
 
     @cell_magic
     @magic_arguments.magic_arguments()
@@ -119,6 +120,7 @@ class CosmosMagics(Magics):
                 raise Exception("cosmos endpoint credentials are not set")
 
             CosmosClient = cosmos_client.CosmosClient(host, {'masterKey': key})
+            self.shell.user_ns['cosmos_client'] = CosmosClient
 
     @line_magic("database")
     def set_database(self, line, cell="", local_ns=None):
