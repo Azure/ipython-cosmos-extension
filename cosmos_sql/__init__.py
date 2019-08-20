@@ -22,14 +22,17 @@ def unload_ipython_extension(ipython):
 class CosmosMagics(Magics):
     @cell_magic
     @magic_arguments.magic_arguments()
-    @magic_arguments.argument('--database', '-d',
+    @magic_arguments.argument('--database', '-d', type=str, default=None,
       help='specifies database name'
     )
-    @magic_arguments.argument('--container', '-c',
+    @magic_arguments.argument('--container', '-c', type=str, default=None,
       help='specifies container name'
     )
     @magic_arguments.argument('--asJson',
       help='specifies the output format'
+    )
+    @magic_arguments.argument('--output',
+      help='specifies the output variable name', type=str, default=None,
     )
     def sql(self, line='', cell=None):
         global database, container, CosmosClient, result_auto_convert_to_df
@@ -56,9 +59,15 @@ class CosmosMagics(Magics):
         query = {"query": cell}
         items = list(CosmosClient.QueryItems(earthquakes, query, {'enableCrossPartitionQuery': True}))
         if result_auto_convert_to_df:
-            return pd.DataFrame.from_records(items)
+            result = pd.DataFrame.from_records(items)
         else:
-            return items
+            result = items
+
+        if args.output is not None:
+            self.shell.user_ns[args.output] = result
+            return None
+        else:
+            return result
 
     def ensure_connected(self):
         global CosmosClient
