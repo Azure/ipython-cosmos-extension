@@ -188,6 +188,7 @@ The following provides the guide for Cosmos magic functions:
         otherwise the default container will be used.</li>
         <li>--output VAR_NAME: The dataframe of the result will be stored in a variable with this name.</li>
       </ul>
+      Learn about the Cosmos query language: https://aka.ms/CosmosQuery
     </td>
   </tr>
   <tr style="text-align:left;">
