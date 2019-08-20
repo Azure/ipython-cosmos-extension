@@ -59,7 +59,7 @@ class CosmosMagics(Magics):
         query = {"query": cell}
         items = list(CosmosClient.QueryItems(earthquakes, query, {'enableCrossPartitionQuery': True}))
         if result_auto_convert_to_df:
-            result = pd.DataFrame.from_records(items)
+            result = self.to_data_frame(items)
         else:
             result = items
 
@@ -68,6 +68,12 @@ class CosmosMagics(Magics):
             return None
         else:
             return result
+
+    def to_data_frame(self, items):
+        try:
+            return pd.DataFrame.from_records(items)
+        except TypeError:
+            return pd.DataFrame.from_dict(items)
 
     def ensure_connected(self):
         global CosmosClient
