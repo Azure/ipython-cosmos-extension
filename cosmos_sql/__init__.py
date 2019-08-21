@@ -45,9 +45,6 @@ class CosmosMagics(Magics):
             SELECT top 1 r.id, r._ts from r order by r._ts desc
         """
         args = magic_arguments.parse_argstring(self.sql, line)
-        if args.help:
-            self.help_internal()
-            return
 
         global database, container, CosmosClient, result_auto_convert_to_df
         self.ensure_connected()
@@ -68,9 +65,9 @@ class CosmosMagics(Magics):
             raise Exception('container is not specified')
 
         database_link = 'dbs/' + database_id
-        earthquakes = database_link + '/colls/' + container_id
+        collection_link = database_link + '/colls/' + container_id
         query = {"query": cell}
-        items = list(CosmosClient.QueryItems(earthquakes, query, {'enableCrossPartitionQuery': True}))
+        items = list(CosmosClient.QueryItems(collection_link, query, {'enableCrossPartitionQuery': True}))
         if result_auto_convert_to_df:
             result = self.to_data_frame(items)
         else:
@@ -108,13 +105,14 @@ class CosmosMagics(Magics):
     def set_database(self, line, cell="", local_ns=None):
         """ Sets the default Cosmos database to be used in queries.
         Usage:
-            database DATABASE_NAME
+            %database DATABASE_NAME
         """
         if not line:
             raise Exception('database is not specified')
 
         global database, container, CosmosClient
-        database = line
+        # remove empty spaces
+        database = line.strip()
 
     @line_magic("container")
     def set_container(self, line, cell="", local_ns=None):
@@ -125,7 +123,8 @@ class CosmosMagics(Magics):
         if not line:
             raise Exception('container is not specified')
         global database, container, CosmosClient
-        container = line
+        # remove empty spaces
+        container = line.strip()
 
     @line_magic("enable_autoconvert_to_dataframe")
     def enable_autoconvert_to_dataframe(self, line, cell="", local_ns=None):
