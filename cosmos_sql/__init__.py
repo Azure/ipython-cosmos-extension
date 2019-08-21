@@ -51,23 +51,38 @@ class CosmosMagics(Magics):
         self._ipython_display = IpythonDisplay()
         self.ensure_connected()
 
+    @line_magic("sql")
+    def sql_help(self, line, cell="", local_ns=None):
+        """ displays help
+        """
+        self.help_internal()
+
     @cell_magic
     @magic_arguments.magic_arguments()
     @magic_arguments.argument('--database', '-d', type=str, default=None,
-      help='specifies database name'
+      help='If provided, this Cosmos database will be used;'
     )
     @magic_arguments.argument('--container', '-c', type=str, default=None,
-      help='specifies container name'
-    )
-    @magic_arguments.argument('--asJson',
-      help='specifies the output format'
+      help='If provided, this Cosmos container will be used;'
     )
     @magic_arguments.argument('--output',
-      help='specifies the output variable name', type=str, default=None,
+      help='The dataframe of the result will be stored in a variable with this name.', type=str, default=None,
     )
-    def sql(self, line='', cell=None):
-        global database, container, CosmosClient, result_auto_convert_to_df
+    def sql(self, line, cell="", local_ns=None):
+        """
+        Queries Azure Cosmos DB using the given Cosmos database and container.
+        Learn about the Cosmos query language: https://aka.ms/CosmosQuery
+
+        Example:
+            %%sql --database databaseName --container containerName
+            SELECT top 1 r.id, r._ts from r order by r._ts desc
+        """
         args = magic_arguments.parse_argstring(self.sql, line)
+        if args.help:
+            self.help_internal()
+            return
+
+        global database, container, CosmosClient, result_auto_convert_to_df
         self.ensure_connected()
 
         if args.database:
@@ -124,9 +139,9 @@ class CosmosMagics(Magics):
 
     @line_magic("database")
     def set_database(self, line, cell="", local_ns=None):
-        """ Sets database name
+        """ Sets the default Cosmos database to be used in queries.
         Usage:
-        * ``database database_name``  - sets database name
+        * ``database DATABASE_NAME``  - sets database name
         """
         if not line:
             raise Exception('database is not specified')
@@ -136,9 +151,9 @@ class CosmosMagics(Magics):
 
     @line_magic("container")
     def set_container(self, line, cell="", local_ns=None):
-        """ Sets container name
+        """ Sets the default Cosmos container to be used in queries.
         Usage:
-        * ``container container_name``  - sets container name
+        * ``container CONTAINER_NAME``  - sets container name
         """
         if not line:
             raise Exception('container is not specified')
@@ -164,7 +179,10 @@ class CosmosMagics(Magics):
         result_auto_convert_to_df = False
 
     @line_magic
-    def help(self, line, cell="", local_ns=None):
+    def cosmos_help(self, line, cell="", local_ns=None):
+        self.help_internal()
+
+    def help_internal(self):
         """ Displays help
         Usage:
         * ``help``  - displays help
