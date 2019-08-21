@@ -18,56 +18,38 @@ def unload_ipython_extension(ipython):
     CosmosClient = None
     pass
 
-from IPython.core.display import display
-from IPython.core.display import HTML
-from IPython import get_ipython
-import sys
-
-class IpythonDisplay(object):
-    def __init__(self):
-        self._ipython_shell = get_ipython()
-
-    def html(self, to_display):
-        display(HTML(to_display))
-
-    def display(self, msg):
-        self._ipython_shell.write(msg)
-        self.__stdout_flush()
-
-    def display_error(self, error):
-        self._ipython_shell.write_err(u"{}\n".format(error))
-        self.__stderr_flush()
-
-    def __stdout_flush(self):
-        sys.stdout.flush()
-
-    def __stderr_flush(self):
-        sys.stdout.flush()
-
 @magics_class
 class CosmosMagics(Magics):
     def __init__(self, shell, data=None):
         super(CosmosMagics, self).__init__(shell)
-        self._ipython_display = IpythonDisplay()
         self.ensure_connected()
 
     @cell_magic
     @magic_arguments.magic_arguments()
     @magic_arguments.argument('--database', '-d', type=str, default=None,
-      help='specifies database name'
+      help='If provided, this Cosmos database will be used;'
     )
     @magic_arguments.argument('--container', '-c', type=str, default=None,
-      help='specifies container name'
-    )
-    @magic_arguments.argument('--asJson',
-      help='specifies the output format'
+      help='If provided, this Cosmos container will be used;'
     )
     @magic_arguments.argument('--output',
-      help='specifies the output variable name', type=str, default=None,
+      help='The dataframe of the result will be stored in a variable with this name.', type=str, default=None,
     )
-    def sql(self, line='', cell=None):
-        global database, container, CosmosClient, result_auto_convert_to_df
+    def sql(self, line, cell="", local_ns=None):
+        """
+        Queries Azure Cosmos DB using the given Cosmos database and container.
+        Learn about the Cosmos query language: https://aka.ms/CosmosQuery
+
+        Example:
+            %%sql --database databaseName --container containerName
+            SELECT top 1 r.id, r._ts from r order by r._ts desc
+        """
         args = magic_arguments.parse_argstring(self.sql, line)
+        if args.help:
+            self.help_internal()
+            return
+
+        global database, container, CosmosClient, result_auto_convert_to_df
         self.ensure_connected()
 
         if args.database:
@@ -124,9 +106,9 @@ class CosmosMagics(Magics):
 
     @line_magic("database")
     def set_database(self, line, cell="", local_ns=None):
-        """ Sets database name
+        """ Sets the default Cosmos database to be used in queries.
         Usage:
-        * ``database database_name``  - sets database name
+            database DATABASE_NAME
         """
         if not line:
             raise Exception('database is not specified')
@@ -136,9 +118,9 @@ class CosmosMagics(Magics):
 
     @line_magic("container")
     def set_container(self, line, cell="", local_ns=None):
-        """ Sets container name
+        """ Sets the default Cosmos container to be used in queries.
         Usage:
-        * ``container container_name``  - sets container name
+            %container CONTAINER_NAME
         """
         if not line:
             raise Exception('container is not specified')
@@ -162,47 +144,3 @@ class CosmosMagics(Magics):
         """
         global result_auto_convert_to_df
         result_auto_convert_to_df = False
-
-    @line_magic
-    def help(self, line, cell="", local_ns=None):
-        """ Displays help
-        Usage:
-        * ``help``  - displays help
-        """
-        help_html = u"""
-The following provides the guide for Cosmos magic functions:
-<table>
-  <tr style="text-align:left;">
-    <th style="text-align:left;">Magic</th>
-    <th style="text-align:left;">Example</th>
-    <th style="text-align:left;">Description</th>
-  </tr>  
-  <tr style="text-align:left;">
-    <td style="text-align:left;">sql</td>
-    <td style="text-align:left;">%%sql --database databaseName --container containerName
-                            <br/>SELECT top 1 r.id, r._ts from r order by r._ts desc</td>
-    <td style="text-align:left;">Queries Azure Cosmos DB using the given Cosmos database and container.
-    Parameters:
-      <ul>
-        <li>--database DATABASE_NAME: If provided, this Cosmos database will be used;
-         otherwise the default database will be used.</li>
-        <li>--container CONTAINER_NAME: If provided, this Cosmos container will be used; 
-        otherwise the default container will be used.</li>
-        <li>--output VAR_NAME: The dataframe of the result will be stored in a variable with this name.</li>
-      </ul>
-      Learn about the Cosmos query language: https://aka.ms/CosmosQuery
-    </td>
-  </tr>
-  <tr style="text-align:left;">
-    <td style="text-align:left;">database</td>
-    <td style="text-align:left;">%database databaseName</td>
-    <td style="text-align:left;">Sets the default Cosmos database to be used in queries.</td>
-  </tr>
-  <tr style="text-align:left;">
-    <td style="text-align:left;">container</td>
-    <td style="text-align:left;">%container containerName</td>
-    <td style="text-align:left;">Sets the default Cosmos container to be used in queries.</td>
-  </tr>
-</table>
-"""
-        self._ipython_display.html(help_html)
