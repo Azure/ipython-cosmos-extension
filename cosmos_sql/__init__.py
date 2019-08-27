@@ -1,12 +1,12 @@
 import azure.cosmos.documents as documents
-import azure.cosmos.cosmos_client as cosmos_client
+import azure.cosmos.cosmos_client as cosmosclient_builder
 import azure.cosmos.errors as errors
 from IPython.core import magic_arguments
 from IPython.core.magic import line_magic, cell_magic, line_cell_magic, Magics, magics_class
 import pandas as pd
 import logging
 
-CosmosClient = None
+cosmos_client = None
 database = None
 container = None
 result_auto_convert_to_df = True
@@ -15,7 +15,7 @@ def load_ipython_extension(ipython):
     ipython.register_magics(CosmosMagics)
 
 def unload_ipython_extension(ipython):
-    CosmosClient = None
+    cosmos_client = None
     pass
 
 @magics_class
@@ -46,7 +46,7 @@ class CosmosMagics(Magics):
         """
         args = magic_arguments.parse_argstring(self.sql, line)
 
-        global database, container, CosmosClient, result_auto_convert_to_df
+        global database, container, cosmos_client, result_auto_convert_to_df
         self.ensure_connected()
 
         if args.database:
@@ -64,10 +64,16 @@ class CosmosMagics(Magics):
         if container_id is None:
             raise Exception('container is not specified')
 
-        database_link = 'dbs/' + database_id
-        collection_link = database_link + '/colls/' + container_id
-        query = {"query": cell}
-        items = list(CosmosClient.QueryItems(collection_link, query, {'enableCrossPartitionQuery': True}))
+        query = cell
+        container = cosmos_client.get_database_client(database_id).get_container_client(container_id)
+
+        query_iterable = container.query_items(
+            query=query,
+            enable_cross_partition_query=True
+        )
+
+        items = list(query_iterable)
+
         if result_auto_convert_to_df:
             result = self.to_data_frame(items)
         else:
@@ -86,9 +92,9 @@ class CosmosMagics(Magics):
             return pd.DataFrame.from_dict(items)
 
     def ensure_connected(self):
-        global CosmosClient
+        global cosmos_client
 
-        if not CosmosClient:
+        if not cosmos_client:
             import os
             host = os.environ["COSMOS_ENDPOINT"]
             key = os.environ["COSMOS_KEY"]
@@ -98,8 +104,8 @@ class CosmosMagics(Magics):
                 print("cosmos endpoint credentials is not set")
                 raise Exception("cosmos endpoint credentials are not set")
 
-            CosmosClient = cosmos_client.CosmosClient(host, {'masterKey': key})
-            self.shell.user_ns['cosmos_client'] = CosmosClient
+            cosmos_client = cosmosclient_builder.CosmosClient(host, {'masterKey': key})
+            self.shell.user_ns['cosmos_client'] = cosmos_client
 
     @line_magic("database")
     def set_database(self, line, cell="", local_ns=None):
@@ -110,7 +116,7 @@ class CosmosMagics(Magics):
         if not line:
             raise Exception('database is not specified')
 
-        global database, container, CosmosClient
+        global database, container, cosmos_client
         # remove empty spaces
         database = line.strip()
 
@@ -122,7 +128,7 @@ class CosmosMagics(Magics):
         """
         if not line:
             raise Exception('container is not specified')
-        global database, container, CosmosClient
+        global database, container, cosmos_client
         # remove empty spaces
         container = line.strip()
 
