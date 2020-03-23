@@ -104,7 +104,8 @@ class CosmosMagics(Magics):
                 print("cosmos endpoint credentials is not set")
                 raise Exception("cosmos endpoint credentials are not set")
 
-            cosmos_client = cosmosclient_builder.CosmosClient(host, {'masterKey': key})
+            cosmos_client = cosmosclient_builder.CosmosClient(host, {'masterKey': key},
+                                                              user_agent='CosmosNotebookServicePythonClient')
             self.shell.user_ns['cosmos_client'] = cosmos_client
 
     @line_magic("database")
